@@ -89,9 +89,9 @@ deliver_publish(MQTT_Client* client, uint8_t* message, uint16_t length) {
 
   // callback to client
   if (client->dataCb)
-    client->dataCb((uint32_t*)client, topic, topic_length, data, data_length);
+    client->dataCb(client, topic, topic_length, data, data_length);
   if (client->cmdDataCb)
-    client->cmdDataCb((uint32_t*)client, topic, topic_length, data, data_length);
+    client->cmdDataCb(client, topic, topic_length, data, data_length);
 }
 
 /**
@@ -164,8 +164,8 @@ mqtt_tcpclient_recv(void* arg, char* pdata, unsigned short len) {
     case MQTT_MSG_TYPE_CONNACK:
       //DBG_MQTT("MQTT: Connect successful\n");
       // callbacks for internal and external clients
-      if (client->connectedCb) client->connectedCb((uint32_t*)client);
-      if (client->cmdConnectedCb) client->cmdConnectedCb((uint32_t*)client);
+      if (client->connectedCb) client->connectedCb(client);
+      if (client->cmdConnectedCb) client->cmdConnectedCb(client);
       client->reconTimeout = 1; // reset the reconnect backoff
       break;
 
@@ -357,8 +357,8 @@ mqtt_tcpclient_discon_cb(void* arg) {
   // if this is an aborted connection we're done
   if (client == NULL) return;
   DBG_MQTT("MQTT: Disconnected from %s:%d\n", client->host, client->port);
-  if (client->disconnectedCb) client->disconnectedCb((uint32_t*)client);
-  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb((uint32_t*)client);
+  if (client->disconnectedCb) client->disconnectedCb(client);
+  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb(client);
 
   // reconnect unless we're in a permanently disconnected state
   if (client->connState == MQTT_DISCONNECTED) return;
@@ -380,8 +380,8 @@ mqtt_tcpclient_recon_cb(void* arg, int8_t err) {
   if (pespconn->proto.tcp) os_free(pespconn->proto.tcp);
   os_free(pespconn);
   os_printf("MQTT: Connection reset from %s:%d\n", client->host, client->port);
-  if (client->disconnectedCb) client->disconnectedCb((uint32_t*)client);
-  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb((uint32_t*)client);
+  if (client->disconnectedCb) client->disconnectedCb(client);
+  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb(client);
 
   // reconnect unless we're in a permanently disconnected state
   if (client->connState == MQTT_DISCONNECTED) return;
@@ -497,9 +497,11 @@ mqtt_dns_found(const char* name, ip_addr_t* ipaddr, void* arg) {
 
   if (ipaddr == NULL) {
     os_printf("MQTT: DNS lookup failed\n");
-    client->timeoutTick = client->reconTimeout;
-    if (client->reconTimeout < 128) client->reconTimeout <<= 1;
-    client->connState = TCP_RECONNECT_REQ; // the timer will kick-off a reconnection
+    if (client != NULL) {
+      client->timeoutTick = client->reconTimeout;
+      if (client->reconTimeout < 128) client->reconTimeout <<= 1;
+      client->connState = TCP_RECONNECT_REQ; // the timer will kick-off a reconnection
+    }
     return;
   }
   DBG_MQTT("MQTT: ip %d.%d.%d.%d\n",
@@ -508,7 +510,7 @@ mqtt_dns_found(const char* name, ip_addr_t* ipaddr, void* arg) {
             *((uint8 *)&ipaddr->addr + 2),
             *((uint8 *)&ipaddr->addr + 3));
 
-  if (client->ip.addr == 0 && ipaddr->addr != 0) {
+  if (client != NULL && client->ip.addr == 0 && ipaddr->addr != 0) {
     os_memcpy(client->pCon->proto.tcp->remote_ip, &ipaddr->addr, 4);
     uint8_t err;
     if (client->security)
@@ -547,10 +549,11 @@ msg_conn_init(mqtt_connection_t *new_msg, mqtt_connection_t *old_msg,
 * @retval TRUE if success queue
 */
 bool ICACHE_FLASH_ATTR
-MQTT_Publish(MQTT_Client* client, const char* topic, const char* data, uint8_t qos, uint8_t retain) {
+MQTT_Publish(MQTT_Client* client, const char* topic, const char* data, uint16_t data_length,
+    uint8_t qos, uint8_t retain)
+{
   // estimate the packet size to allocate a buffer
   uint16_t topic_length = os_strlen(topic);
-  uint16_t data_length = os_strlen(data);
   // estimate: fixed hdr, pkt-id, topic length, topic, data, fudge
   uint16_t buf_len = 3 + 2 + 2 + topic_length + data_length + 16;
   PktBuf *buf = PktBuf_New(buf_len);
@@ -704,7 +707,8 @@ MQTT_Connect(MQTT_Client* client) {
   os_timer_arm(&client->mqttTimer, 1000, 1);
 
   // initiate the TCP connection or DNS lookup
-  os_printf("MQTT: Connect to %s:%d %p\n", client->host, client->port, client->pCon);
+  os_printf("MQTT: Connect to %s:%d %p (client=%p)\n",
+      client->host, client->port, client->pCon, client);
   if (UTILS_StrToIP((const char *)client->host,
         (void*)&client->pCon->proto.tcp->remote_ip)) {
     uint8_t err;
@@ -738,8 +742,8 @@ mqtt_doAbort(MQTT_Client* client) {
   else
     espconn_disconnect(client->pCon);
 
-  if (client->disconnectedCb) client->disconnectedCb((uint32_t*)client);
-  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb((uint32_t*)client);
+  if (client->disconnectedCb) client->disconnectedCb(client);
+  if (client->cmdDisconnectedCb) client->cmdDisconnectedCb(client);
 
   if (client->sending_buffer != NULL) {
     os_free(client->sending_buffer);

@@ -390,8 +390,7 @@ Contact
 If you find problems with esp-link, please create a github issue. If you have a question, please
 use the gitter chat link at the top of this page.
 
-Thnaks
+Thanks
 -------
 Special thanks to Thorsten Von Eicken and JeeLabs who created this repository. 
 Thanks to them was possibilile the birth of the Arduino UNO WiFi project.
-

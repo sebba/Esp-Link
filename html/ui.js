@@ -236,7 +236,7 @@ onLoad(function() {
   var mm = m(
    '<div id="menu">\
       <div class="pure-menu">\
-        <a class="pure-menu-heading" href=".">\
+        <a class="pure-menu-heading" href="/">\
         <img src="/logo.ico" height="128"></a>\
         <ul id="menu-list" class="pure-menu-list"></ul>\
         <p class="sub-menu-header">settings</p>\
@@ -289,6 +289,8 @@ onLoad(function() {
 
       var v = $("#version");
       if (v != null) { v.innerHTML = data.version; }
+      $('title')[0].innerHTML = data["name"];
+      setEditToClick("system-name", data["name"]);
     }, function() { setTimeout(getMenu, 1000); });
   };
   getMenu();
@@ -343,19 +345,6 @@ function getWifiInfo() {
 
 //===== System info
 
-function setEditToClick(klass, value) {
-  domForEach($("."+klass), function(div) {
-    if (div.children.length > 0) {
-      domForEach(div.children, function(el) {
-        if (el.nodeName === "INPUT") el.value = value;
-        else if (el.nodeName !== "DIV") el.innerHTML = value;
-      });
-    } else {
-      div.innerHTML = value;
-    }
-  });
-}
-
 function showSystemInfo(data) {
   Object.keys(data).forEach(function(v) {
     setEditToClick("system-"+v, data[v]);
@@ -406,6 +395,18 @@ function makeAjaxInput(klass, field) {
   });
 }
 
+function setEditToClick(klass, value) {
+  domForEach($("."+klass), function(div) {
+    if (div.children.length > 0) {
+      domForEach(div.children, function(el) {
+        if (el.nodeName === "INPUT") el.value = value;
+        else if (el.nodeName !== "DIV") el.innerHTML = value;
+      });
+    } else {
+      div.innerHTML = value;
+    }
+  });
+}
 
 //===== Notifications
 
@@ -483,8 +484,8 @@ function displayPins(resp) {
       if (i==v) opt.selected = true;
       sel.appendChild(opt);
     });
-    var pup = $(".popup", sel.parentNode);
-    if (pup !== undefined) hidePopup(pup[0]);
+    //var pup = $(".popup", sel.parentNode);
+    //if (pup !== undefined) hidePopup(pup[0]);
   };
 
   createSelectForPin("reset", resp["reset"]);
