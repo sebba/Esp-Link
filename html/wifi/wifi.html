@@ -57,9 +57,8 @@
 
           <br>
 
-  <!-- NEW FEATURE -->
           <div id="APSettings-box" class="card">
-
+            <div id="alertAPSettings">AP main settings, use with care!</div>
             <table class="pure-table pure-table-horizontal"><tbody>
             <tr><td class="td_header"><h1>Soft-AP Settings</h1></td></tr>
             </tbody> </table>
@@ -67,18 +66,14 @@
             <div id="AP_Settings-spinner" class="spinner spinner-small"></div>
 
             <form action="#" id="AP_Settings-form" class="pure-form" hidden>
-              <!--<legend>Soft-AP main settings, use with care!</legend>-->
-
               <div class="pure-form-stacked">
                 <label>Soft-AP SSID</label>
                 <input type="text" name="ap_ssid" />
-                <div class="popup">Change the name of your AP!</div>
               </div>
 
               <div class="pure-form-stacked">
                 <label>Soft-AP Password</label>
                 <input type="text" name="ap_password" />
-                <div class="popup">Password must be at least 8 chars long!</div>
               </div>
 
               <div class="pure-form-stacked">
@@ -100,14 +95,7 @@
                 <div class="pure-form-stacked">
                   <label>Soft-AP Max Connections</label>
                   <input type="text" name="ap_maxconn" />
-                  <div class="popup">Max 4 ( default 4 )</div>
                 </div>
-
-                <!--div class="pure-form-stacked">
-                  <label>Soft-AP Beacon Interval</label>
-                  <input type="text" name="ap_beacon" />
-                  <div class="popup">Between 100 - 60000 ms ( default 100ms )</div>
-                </div-->
 
                 <div class="pure-form-stacked">
                   <label>Soft-AP Auth Mode</label>
@@ -118,13 +106,7 @@
                     <option value="3">WPA2_PSK</option>
                     <option value="4">WPA_WPA2_PSK</option>
                   </select>
-                  <div class="popup">Default WPA_WPA2_PSK</div>
                 </div>
-
-                <!--div class="form-horizontal">
-                  <label><input type="checkbox" name="ap_hidden" />Soft-AP SSID hidden</label>
-                  <div class="popup">Check this box to hide you Soft-AP SSID ( default Not Hidden )</div>
-                </div-->
 
               </div>
 
@@ -132,7 +114,6 @@
 
             </form>
           </div>
-  <!-- NEW FEATURE -->
           <br>
 
           <div class="card">
@@ -182,6 +163,9 @@ onLoad(function() {
   bnd($("#AP_Settings-ron"), "click", doApAdvanced);
   bnd($("#AP_Settings-roff"), "click", undoApAdvanced);
   bnd($("#AP_Settings-form"), "submit", changeApSettings);
+
+  bnd($('#APSettings-box'), "mouseover", displayAPAlert);
+  bnd($('#APSettings-box'), "mouseout", hideAPAlert);
 
   bnd($("#wifiform"), "submit", changeWifiAp);
   bnd($("#specform"), "submit", changeSpecial);

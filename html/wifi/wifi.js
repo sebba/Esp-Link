@@ -232,8 +232,8 @@ function enableNetworkSelection(){
     var b = (data['mode'] == "STA") ;
 
     var wifiform = document.getElementById('wifiform'),
-    items = wifiform.getElementsByTagName('input'),
-    btn = $("#connect-button");
+        items = wifiform.getElementsByTagName('input'),
+        btn = $("#connect-button");
 
     var inp, i=0;
     while(inp=items[i++]) {
@@ -264,6 +264,16 @@ function displayWiFiModeAlert()
 function hideWiFiModeAlert()
 {
   $("#alertWiFiMode").style.display = "none";
+}
+
+function displayAPAlert()
+{
+  $("#alertAPSettings").style.display = "inherit";
+}
+
+function hideAPAlert()
+{
+  $("#alertAPSettings").style.display = "none";
 }
 
 function doDhcp() {

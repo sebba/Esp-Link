@@ -794,7 +794,7 @@ a.pure-menu-link {
     margin-left: 5% !important;
 }
 
-#alertWiFiMode {
+#alertWiFiMode, #alertAPSettings {
     display:none;
     /*border:1px solid #000;
     width:400px;
